@@ -20,6 +20,7 @@ public class MainActivity extends AppCompatActivity {
     public static String tag = "mywordle";
     TextView[] tv = new TextView[6];
     int current = 0;
+    int correct = 0;
     EditText et;
     String myword = "SPICE";
     InputMethodManager imm;
@@ -27,11 +28,13 @@ public class MainActivity extends AppCompatActivity {
     Spannable wordle_compare(String guess) {
         // https://stackoverflow.com/a/53573169/838719
         Spannable result = new SpannableString(guess);
+        correct = 0;
         for (int i = 0; i < myword.length(); i++) {
             //Log.d(tag,"target: "+myword.charAt(i)+" guess: "+guess.charAt(i));
             if (myword.charAt(i) == guess.charAt(i)) {
                 // correct character, correct position
                 result.setSpan(new BackgroundColorSpan(0xFF00FF00), i, i+1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                correct += 1;
             } else if (myword.contains(String.valueOf(guess.charAt(i)))) {
                 // correct character, wrong position
                 result.setSpan(new BackgroundColorSpan(0xFFFFFF00), i, i+1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
@@ -62,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
             //Log.d(tag,"i: "+i+" event: "+keyEvent);
 
             // only act on DOWN key events
-            if (keyEvent != null && keyEvent.getAction() != KeyEvent.ACTION_DOWN) return false;
+            if (keyEvent != null && keyEvent.getAction() != KeyEvent.ACTION_DOWN) return true;
 
             // get guessed string in CAPS
             String guess = textView.getText().toString().toUpperCase();
@@ -73,10 +76,13 @@ public class MainActivity extends AppCompatActivity {
                 // if not: inform the user and clear the text field
                 Toast.makeText(MainActivity.this, "Enter exactly 5 characters", Toast.LENGTH_SHORT).show();
                 et.setText("");
-                return false;
+                return true;
             }
 
             tv[current].setText(wordle_compare(guess));
+
+            // TODO: leave the correct guess visible
+            if (correct == 5) { reset("You won!"); return true; }
             current += 1;
             //Log.d(tag,"current:" + current);
 
