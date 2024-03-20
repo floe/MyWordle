@@ -10,20 +10,22 @@ import android.text.style.BackgroundColorSpan;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.Objects;
+
 public class MainActivity extends AppCompatActivity {
 
     public static String tag = "mywordle";
-    TextView tv[] = new TextView[3];
+    TextView tv[] = new TextView[6];
     int current = 0;
-
     EditText et;
-
     String myword = "SPICE";
+    InputMethodManager imm;
 
     Spannable wordle_compare(String guess) {
         // https://stackoverflow.com/a/53573169/838719
@@ -49,14 +51,21 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+
         tv[0] = findViewById(R.id.textView1);
         tv[1] = findViewById(R.id.textView2);
         tv[2] = findViewById(R.id.textView3);
+        tv[3] = findViewById(R.id.textView4);
+        tv[4] = findViewById(R.id.textView5);
+        tv[5] = findViewById(R.id.textView6);
 
         et = findViewById(R.id.editTextText);
         et.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
+                //Log.d(tag,"i: "+i+" event: "+keyEvent);
+                if (keyEvent != null && keyEvent.getAction() != KeyEvent.ACTION_DOWN) return false;
                 String guess = textView.getText().toString().toUpperCase();
                 tv[current].setText(wordle_compare(guess));
                 current += 1;
@@ -69,8 +78,7 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(MainActivity.this, "You lost!", Toast.LENGTH_SHORT).show();
                 }
                 // https://stackoverflow.com/questions/1109022/how-can-i-close-hide-the-android-soft-keyboard-programmatically
-                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
+                imm.hideSoftInputFromWindow(textView.getWindowToken(), 0);
                 return true;
             }
         });
