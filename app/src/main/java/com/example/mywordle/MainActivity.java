@@ -1,7 +1,5 @@
 package com.example.mywordle;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Context;
 import android.os.Bundle;
 import android.text.Spannable;
@@ -10,18 +8,17 @@ import android.text.style.BackgroundColorSpan;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.Objects;
+import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
 
     public static String tag = "mywordle";
-    TextView tv[] = new TextView[6];
+    TextView[] tv = new TextView[6];
     int current = 0;
     EditText et;
     String myword = "SPICE";
@@ -51,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 
         tv[0] = findViewById(R.id.textView1);
         tv[1] = findViewById(R.id.textView2);
@@ -61,34 +58,45 @@ public class MainActivity extends AppCompatActivity {
         tv[5] = findViewById(R.id.textView6);
 
         et = findViewById(R.id.editTextText);
-        et.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
-                //Log.d(tag,"i: "+i+" event: "+keyEvent);
-                if (keyEvent != null && keyEvent.getAction() != KeyEvent.ACTION_DOWN) return false;
-                String guess = textView.getText().toString().toUpperCase();
-                tv[current].setText(wordle_compare(guess));
-                current += 1;
-                Log.d(tag,"current:" + current);
-                if (current >= tv.length) {
-                    // you lost
-                    for (TextView mytv: tv) { mytv.setText("_____"); }
-                    // for (int i = 0; i < tv.length; i++) { tv[i].setText(""); }
-                    current = 0;
-                    Toast.makeText(MainActivity.this, "You lost!", Toast.LENGTH_SHORT).show();
-                }
-                // https://stackoverflow.com/questions/1109022/how-can-i-close-hide-the-android-soft-keyboard-programmatically
-                imm.hideSoftInputFromWindow(textView.getWindowToken(), 0);
-                return true;
+        et.setOnEditorActionListener((textView, i, keyEvent) -> {
+            //Log.d(tag,"i: "+i+" event: "+keyEvent);
+
+            // only act on DOWN key events
+            if (keyEvent != null && keyEvent.getAction() != KeyEvent.ACTION_DOWN) return false;
+
+            // get guessed string in CAPS
+            String guess = textView.getText().toString().toUpperCase();
+            Log.d(tag,"entered text: "+guess);
+
+            // guess is exactly 5 characters?
+            if (guess.length() != 5) {
+                // if not: inform the user and clear the text field
+                Toast.makeText(MainActivity.this, "Enter exactly 5 characters", Toast.LENGTH_SHORT).show();
+                et.setText("");
+                return false;
             }
+
+            tv[current].setText(wordle_compare(guess));
+            current += 1;
+            //Log.d(tag,"current:" + current);
+
+            if (current >= tv.length) { reset("You lost!"); }
+
+            // https://stackoverflow.com/questions/1109022/how-can-i-close-hide-the-android-soft-keyboard-programmatically
+            imm.hideSoftInputFromWindow(textView.getWindowToken(), 0);
+            return true;
         });
 
-        et.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View view, boolean b) {
-                if (!b) return;
-                et.setText("");
-            }
+        et.setOnFocusChangeListener((view, b) -> {
+            if (!b) return;
+            et.setText("");
         });
+    }
+
+    private void reset(String message) {
+        for (TextView mytv: tv) { mytv.setText("_____"); }
+        current = 0;
+        Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
+        et.setText("");
     }
 }
