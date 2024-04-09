@@ -1,5 +1,7 @@
 package com.example.mywordle;
 
+import static java.lang.Math.random;
+
 import android.content.Context;
 import android.os.Bundle;
 import android.text.Spannable;
@@ -7,13 +9,16 @@ import android.text.SpannableString;
 import android.text.style.BackgroundColorSpan;
 import android.util.Log;
 import android.view.KeyEvent;
-import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.util.stream.Stream;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -24,6 +29,13 @@ public class MainActivity extends AppCompatActivity {
     EditText et;
     String myword = "SPICE";
     InputMethodManager imm;
+
+    String[] read_wordlist() {
+        // from https://stackoverflow.com/a/73633910
+        Stream<String> text = new BufferedReader(new InputStreamReader(getResources().openRawResource(R.raw.wordlewords))).lines();
+        String[] words = text.toArray(String[]::new);
+        return words;
+    }
 
     Spannable wordle_compare(String guess) {
         // https://stackoverflow.com/a/53573169/838719
@@ -52,6 +64,10 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        String[] mywords = read_wordlist();
+        long randnum = Math.round(Math.random() * mywords.length);
+        myword = mywords[(int) randnum].toUpperCase();
+        Log.d(tag,"number: "+Long.toString(randnum)+" word: "+myword);
 
         tv[0] = findViewById(R.id.textView1);
         tv[1] = findViewById(R.id.textView2);
